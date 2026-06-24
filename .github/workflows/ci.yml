@@ -2,7 +2,8 @@
 #
 # What this does:
 #   - On every push to main (and every pull request), spins up a clean
-#     Ubuntu server with Node.js 20
+#     Ubuntu server with Node.js 24 (current LTS — Node 20 was deprecated
+#     on GitHub Actions runners in September 2025)
 #   - Installs dependencies (npm ci is faster and stricter than npm install)
 #   - Runs `npm run build` to verify the site actually compiles
 #   - Uploads the built `out/` directory as an artifact you can download
@@ -12,6 +13,7 @@
 #   - The green ✓ badge on commits tells you (and anyone else) the build
 #     was successful at that point in history
 #   - The `out/` artifact is ready to upload to any static host
+#     (or use the Vercel/Netlify/Cloudflare one-click deploy instead)
 
 name: Build
 
@@ -29,37 +31,52 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Global env: allow Node 20 if anyone reverts to it; harmless on Node 24
+env:
+  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
+
 jobs:
   build:
     # Run on the latest Ubuntu; this is GitHub's free Linux VM
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out the code from your repo at the commit being tested
+      # 1. Check out the code from your repo at the commit being tested.
+      #    @v4 is the current major; pin the action to a commit SHA in
+      #    production-critical repos (we keep v4 here for readability).
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Fetch full history so actions/setup-node's cache can hash it
+          fetch-depth: 0
 
-      # 2. Set up Node.js 20 (matching what you develop with locally)
+      # 2. Set up Node.js. We pin to Node 24 because:
+      #      - GitHub deprecated Node 20 on ubuntu-latest runners in
+      #        September 2025
+      #      - Node 24 (current LTS) is fully backward-compatible with our
+      #        code (Next.js 15.5+, React 19, TypeScript 5)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           # Cache node_modules between runs for faster builds
           cache: 'npm'
 
-      # 3. Install dependencies from package-lock.json (reproducible)
+      # 3. Install dependencies from package-lock.json (reproducible).
+      #    If a peer dependency conflict ever resurfaces, fall back to:
+      #      npm ci --legacy-peer-deps
       - name: Install dependencies
         run: npm ci
 
-      # 4. Run the production build
-      # This runs TypeScript type-check + Next.js build
-      # The output goes to the `out/` directory (because output: 'export')
+      # 4. Run the production build.
+      #    Runs TypeScript type-check + Next.js build.
+      #    Output goes to the `out/` directory (because output: 'export').
       - name: Build site
         run: npm run build
 
-      # 5. Upload the built static site as a downloadable artifact
-      # After the workflow runs, you can download this from the Actions tab
-      # and upload it to any static host (or use the Vercel/Netlify deploy)
+      # 5. Upload the built static site as a downloadable artifact.
+      #    After the workflow runs, you can download this from the
+      #    Actions tab and upload it to any static host.
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
