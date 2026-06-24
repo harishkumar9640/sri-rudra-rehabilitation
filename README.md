@@ -1,5 +1,8 @@
 # Sri Rudra Rehabilitation & Healing Institute — Website
 
+[![Build status](https://img.shields.io/github/actions/workflow/status/harishkumar9640/sri-rudra-rehabilitation/ci.yml?branch=main&label=build&logo=github)](https://github.com/harishkumar9640/sri-rudra-rehabilitation/actions)
+[![License: ISC](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
+
 A production-ready marketing website for a doctor-led, 24×7 rehabilitation hospital in Nalgonda, Telangana. Built with **Next.js 15**, **React 19**, **TypeScript**, and **Tailwind CSS**. Static-exported, accessible, SEO-optimized, and mobile-first.
 
 This document explains **every file, every architectural decision, and every line of non-trivial code** so that a developer who has never seen this project can understand, modify, and ship it.

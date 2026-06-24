@@ -1,0 +1,69 @@
+# GitHub Actions workflow for Sri Rudra website
+#
+# What this does:
+#   - On every push to main (and every pull request), spins up a clean
+#     Ubuntu server with Node.js 20
+#   - Installs dependencies (npm ci is faster and stricter than npm install)
+#   - Runs `npm run build` to verify the site actually compiles
+#   - Uploads the built `out/` directory as an artifact you can download
+#
+# Why this is useful:
+#   - Catches broken code before it reaches production
+#   - The green ✓ badge on commits tells you (and anyone else) the build
+#     was successful at that point in history
+#   - The `out/` artifact is ready to upload to any static host
+
+name: Build
+
+on:
+  # Run on every push to main branch
+  push:
+    branches: [main]
+  # Also run on every pull request targeting main
+  pull_request:
+    branches: [main]
+
+# Cancel any in-progress runs for the same branch when a new push comes in
+# (saves your free 2,000 min/month by not running stale builds)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    # Run on the latest Ubuntu; this is GitHub's free Linux VM
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the code from your repo at the commit being tested
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Set up Node.js 20 (matching what you develop with locally)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          # Cache node_modules between runs for faster builds
+          cache: 'npm'
+
+      # 3. Install dependencies from package-lock.json (reproducible)
+      - name: Install dependencies
+        run: npm ci
+
+      # 4. Run the production build
+      # This runs TypeScript type-check + Next.js build
+      # The output goes to the `out/` directory (because output: 'export')
+      - name: Build site
+        run: npm run build
+
+      # 5. Upload the built static site as a downloadable artifact
+      # After the workflow runs, you can download this from the Actions tab
+      # and upload it to any static host (or use the Vercel/Netlify deploy)
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sri-rudra-out
+          path: out/
+          # Keep for 30 days (free tier limit); increase if you have GH Pro
+          retention-days: 30
