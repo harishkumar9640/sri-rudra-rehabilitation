@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+
+  --pop: 0 0% 100%;
+  --pop-foreground: 222.2 84% 4.9%;
+
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+
+  --ring: 221.2 83.2% 53.3%;
+
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+
+  --card: 222.2 84% 4.9%;
+  --card-foreground: 210 40% 98%;
+
+  --pop: 222.2 84% 4.9%;
+  --pop-foreground: 222.2 84% 4.9%;
+
+  --border: 216 34% 17%;
+  --input: 216 34% 17%;
+
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 84% 4.9%;
+
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 84% 4.9%;
+
+  --muted: 216 34% 17%;
+  --muted-foreground: 215.2 16.3% 46.9%;
+
+  --accent: 216 34% 17%;
+  --accent-foreground: 210 40% 98%;
+
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+
+  --ring: 216 34% 17%;
+}
+
+/*
+ * Global focus ring — WCAG 2.4.7 / 2.4.11
+ * Applies to every keyboard-focusable element.
+ */
+@layer base {
+  :focus-visible {
+    outline: 2px solid #14B8A6;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Respect reduced-motion preference (WCAG 2.3.3) */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'ss01', 'cv11';
+    /* Prevent any rogue child from causing horizontal page scroll.
+       Sections can still have their own internal scrolling. */
+    overflow-x: hidden;
+  }
+
+  /* Slightly tighter heading tracking for a more "premium" feel. */
+  h1, h2, h3 {
+    letter-spacing: -0.01em;
+  }
+
+  /* Better default focus on dark backgrounds — keeps AA contrast. */
+  .bg-brand-900 :focus-visible,
+  footer :focus-visible {
+    outline-color: #5EEAD4;
+  }
+
+  /* Selection colour — on-brand, easy on the eyes. */
+  ::selection {
+    background-color: #CCFBF1;
+    color: #134E4A;
+  }
+}
+
+/* Visually-hidden but screen-reader accessible — WCAG 1.3.1, 2.4.1 */
+.sr-only-focusable:not(:focus):not(:focus-within) {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Subtle premium "lift" — used by cards that should look slightly elevated. */
+@layer components {
+  .card-premium {
+    @apply rounded-2xl border border-brand-200 bg-white p-6 shadow-sm transition-all duration-200;
+  }
+  .card-premium-interactive {
+    @apply hover:-translate-y-1 hover:border-teal-600 hover:shadow-lg focus-within:-translate-y-1 focus-within:border-teal-600 focus-within:shadow-lg;
+  }
+}
