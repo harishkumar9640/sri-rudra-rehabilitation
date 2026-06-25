@@ -16,6 +16,21 @@ import type { ReactNode } from 'react';
  *  - Foreground content sits in a relative layer with semantic markup
  *  - The hidden `sr-only` span describes the hero image for screen readers
  */
+/**
+ * Reusable full-width hero section used by every page.
+ *
+ * Layout:
+ *   - Background image (object-cover, fills the hero)
+ *   - Multi-stop gradient overlay (dark wash on dark tone, light on light)
+ *   - Bottom fade so the hero blends into the next section
+ *   - 1px teal accent line at the very top
+ *
+ * Eyebrow pill wraps text; H1 sets the page title; subtitle explains it;
+ * children render as CTA buttons below the subtitle.
+ *
+ * Responsive: text size scales via `text-3xl sm:text-5xl lg:text-6xl`;
+ * horizontal padding via `px-4 sm:px-6 lg:px-8`.
+ */
 export default function PageHero({
   eyebrow,
   title,

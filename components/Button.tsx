@@ -13,7 +13,10 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
  *  - disabled state with reduced opacity + not-allowed cursor
  */
 
+/** Visual color treatment — see VARIANT map below for the class string each one renders. */
 type Variant = 'primary' | 'secondary' | 'ghost' | 'whatsapp' | 'phone';
+
+/** Height/padding scale. `lg` is the dominant choice on landing pages; `md` is for inline UI. */
 type Size = 'md' | 'lg';
 
 const BASE =
@@ -52,7 +55,7 @@ type ButtonProps = ComponentPropsWithoutRef<'button'> & {
   fullWidth?: boolean;
 };
 
-/** Native <button> — use for actions that don't navigate. */
+/** Native <button> — use for actions that don't navigate (e.g. form submit, toggle). */
 export function Button({
   variant = 'primary',
   size = 'md',
@@ -77,7 +80,7 @@ type LinkButtonProps = ComponentPropsWithoutRef<typeof Link> & {
   fullWidth?: boolean;
 };
 
-/** <Link> styled as a button — use for in-app navigation. */
+/** <Link> styled as a button — use for in-app navigation (e.g. /services, /contact). */
 export function LinkButton({
   variant = 'primary',
   size = 'md',
@@ -102,7 +105,7 @@ type AnchorButtonProps = ComponentPropsWithoutRef<'a'> & {
   fullWidth?: boolean;
 };
 
-/** <a> styled as a button — use for tel:, mailto:, WhatsApp, external URLs. */
+/** <a> styled as a button — use for tel:, mailto:, WhatsApp, PDF download, Instagram. */
 export function AnchorButton({
   variant = 'primary',
   size = 'md',

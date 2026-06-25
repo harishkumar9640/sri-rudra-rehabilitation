@@ -15,14 +15,30 @@
 
 import { SITE } from './constants';
 
+/** Canonical production URL of the deployed site. Used as the @id base for every schema. */
 const SITE_URL = 'https://srirudra.in';
 
+/**
+ * Shape of any structured-data payload we return. Schema.org JSON-LD
+ * objects always have `@context` + `@type` plus arbitrary properties;
+ * we type loosely (`Record<string, unknown>`) so consumers don't have
+ * to satisfy an exhaustive union of every Schema.org type.
+ */
 export type JsonLdObject = Record<string, unknown>;
 
-/* ------------------------------------------------------------------ */
-/* 1. MedicalClinic — the institute                                   */
-/* ------------------------------------------------------------------ */
-
+/**
+ * Build the MedicalClinic schema for Sri Rudra.
+ *
+ * Multi-typed as MedicalClinic + MedicalOrganization + LocalBusiness so
+ * Google can match the entity under several knowledge-panel categories.
+ * Carries every field Google's local pack needs: address, geo coordinates
+ * (exact building pin), opening hours (24×7), phone, medical specialties,
+ * available services, payment accepted, contact points, and Instagram
+ * sameAs for entity consolidation.
+ *
+ * @returns A JSON-LD object ready to be passed to `serializeJsonLd()` and
+ *          inlined into a `<script type="application/ld+json">` tag.
+ */
 export function medicalClinicJsonLd(): JsonLdObject {
   return {
     '@context': 'https://schema.org',
@@ -151,6 +167,15 @@ export function medicalClinicJsonLd(): JsonLdObject {
 /* 2. WebSite — sitelinks search box potential                        */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Build the WebSite schema for Sri Rudra.
+ *
+ * Generic website entity. Helps Google display a sitelinks search box
+ * for branded queries and consolidates the publisher identity with the
+ * MedicalClinic entity via the shared `@id`.
+ *
+ * @returns A JSON-LD object ready to be passed to `serializeJsonLd()`.
+ */
 export function webSiteJsonLd(): JsonLdObject {
   return {
     '@context': 'https://schema.org',
@@ -171,6 +196,16 @@ export function webSiteJsonLd(): JsonLdObject {
 
 export type Crumb = { name: string; url: string };
 
+/**
+ * Build a BreadcrumbList schema for a navigation trail.
+ *
+ * Each crumb becomes a ListItem with `position`, `name`, and `item`
+ * (Schema.org uses `item` for the URL on ListItem, not `url`).
+ *
+ * @param crumbs  Ordered list of crumbs from the site root to the
+ *                current page (e.g. Home → Contact).
+ * @returns       A JSON-LD object ready to be passed to `serializeJsonLd()`.
+ */
 export function breadcrumbJsonLd(crumbs: Crumb[]): JsonLdObject {
   return {
     '@context': 'https://schema.org',
@@ -188,6 +223,12 @@ export function breadcrumbJsonLd(crumbs: Crumb[]): JsonLdObject {
 /* 4. FAQPage — eligibility for FAQ rich results                      */
 /* ------------------------------------------------------------------ */
 
+/**
+ * The 6 FAQ entries shared between the contact page accordion and the
+ * JSON-LD FAQPage schema. Keeping these in one place means a question
+ * only needs to be written once — the rendered accordion on the page
+ * and the structured-data for Google stay in sync automatically.
+ */
 export const FAQS = [
   {
     q: 'Is Sri Rudra open 24 hours?',
@@ -219,6 +260,15 @@ export const FAQS = [
   },
 ] as const;
 
+/**
+ * Build the FAQPage schema for Sri Rudra.
+ *
+ * Emits one Question + acceptedAnswer per entry in FAQS. When Google
+ * crawls the site, these questions become eligible for FAQ rich results
+ * (the expandable Q&A boxes in the SERPs).
+ *
+ * @returns A JSON-LD object ready to be passed to `serializeJsonLd()`.
+ */
 export function faqJsonLd(): JsonLdObject {
   return {
     '@context': 'https://schema.org',
@@ -241,8 +291,18 @@ export function faqJsonLd(): JsonLdObject {
 
 /**
  * Serialize a structured-data payload for safe inlining into a `<script>`
- * tag.  Escapes `</` so an attacker can't break out of the script tag with
- * a malicious URL.
+ * tag. Escapes `<` to `\u003c` so an attacker can't break out of the
+ * JSON-LD `<script>` tag with a malicious URL or HTML payload.
+ *
+ * XSS scenario this prevents: if a user-controlled string (e.g. a service
+ * name from a CMS) contained `</script><img onerror=...>`, naive
+ * `JSON.stringify` would emit it verbatim, terminating the script tag
+ * and executing the injected HTML. The escape converts `<` to its
+ * Unicode escape sequence so the script content stays valid JSON but
+ * is no longer parseable as HTML.
+ *
+ * @param payload  One or more JSON-LD objects to serialize.
+ * @returns        A JSON string safe to drop into a `<script>` innerHTML.
  */
 export function serializeJsonLd(payload: JsonLdObject | JsonLdObject[]): string {
   return JSON.stringify(payload).replace(/</g, '\\u003c');

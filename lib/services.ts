@@ -9,14 +9,22 @@ import type { ReactNode } from 'react';
  * canonical route under /services/.
  */
 
+/**
+ * Internal shape of a service entry. Kept private (not exported) so
+ * the public surface is the readonly `SERVICES` array + lookup helpers.
+ */
 type Service = {
+  /** URL-safe slug. Becomes the last path segment of /services/{slug}/. */
   slug: string;
+  /** Human-readable display name — appears in cards, H1s, and metadata. */
   name: string;
+  /** One-sentence summary for the homepage preview + service card. */
   description: string;
-  /** Name of the inline icon to render from components/ServiceIcon.tsx */
+  /** Name of the inline icon to render from components/Icon.tsx */
   icon: ServiceIconName;
   /** Long-form blurb for the per-service page (Markdown-ready plain text). */
   longDescription: string;
+  /** 4-6 short bullet points shown under "What this program helps with". */
   benefits: readonly string[];
 };
 
@@ -242,7 +250,16 @@ export const SERVICES: readonly Service[] = [
   },
 ] as const;
 
-/** Quick lookup helper used by the per-service pages. */
+/**
+ * Quick lookup helper used by the per-service pages.
+ *
+ * Looks up a service by its slug. Returns `undefined` when the slug
+ * doesn't match any entry — the page handler then calls `notFound()`
+ * to render the 404 page.
+ *
+ * @param slug  The URL slug from the dynamic [slug] route segment.
+ * @returns     The matching `Service`, or `undefined` if not found.
+ */
 export function getServiceBySlug(slug: string): Service | undefined {
   return SERVICES.find((s) => s.slug === slug);
 }

@@ -13,6 +13,25 @@ const NAV = [
   { href: '/contact', label: 'Contact' },
 ] as const;
 
+/**
+ * Sticky top navigation. Renders brand + nav links + CTA buttons on
+ * desktop, and a hamburger drawer on mobile.
+ *
+ * Responsive layout (tested at every viewport 280px-2560px):
+ *   - <lg (<1024px): logo only + hamburger drawer
+ *   - md to lg (768-1023px): logo + inline nav + icon-only CTA buttons
+ *   - >=lg (>=1024px): full brand short name + nav + CTA buttons with text
+ *
+ * State (all client-side):
+ *   - `open`: hamburger drawer is open
+ *   - body scroll is locked while drawer is open
+ *   - drawer auto-closes when viewport resizes above md
+ *   - drawer auto-closes when a nav link is clicked
+ *
+ * Why a client component: needs `useState` + `useEffect` for the drawer
+ * behavior. The whole SiteHeader is marked `'use client'` because the
+ * hamburger toggle is interactive and ships a small JS payload.
+ */
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
 
@@ -124,7 +143,7 @@ export default function SiteHeader() {
             aria-expanded={open}
             aria-controls="mobile-menu"
             onClick={() => setOpen((v) => !v)}
-            className="md:hidden inline-flex h-11 w-11 items-center justify-center rounded-md text-brand-800 transition-colors hover:bg-brand-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+            className="md:hidden inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md text-brand-800 transition-colors hover:bg-brand-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
           >
             <svg
               viewBox="0 0 24 24"

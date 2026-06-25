@@ -16,7 +16,10 @@ import {
 } from '@/lib/structured-data';
 
 export const metadata: Metadata = {
-  title: 'Contact us — Sri Rudra Rehabilitation & Healing Institute',
+  // Return only the page name; the root layout's title.template
+  // ('%s — Sri Rudra ...') appends the institute name automatically.
+  // Returning a fully-qualified title here would duplicate the suffix.
+  title: 'Contact us',
   description:
     'Get in touch with Sri Rudra Rehabilitation & Healing Institute in Nalgonda. Call, WhatsApp, or fill the enquiry form — open 24×7, every day.',
   alternates: { canonical: 'https://srirudra.in/contact/' },

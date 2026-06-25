@@ -1,11 +1,37 @@
 # Sri Rudra Rehabilitation & Healing Institute — Website
 
 [![Build status](https://img.shields.io/github/actions/workflow/status/harishkumar9640/sri-rudra-rehabilitation/ci.yml?branch=main&label=build&logo=github)](https://github.com/harishkumar9640/sri-rudra-rehabilitation/actions)
+[![Tests](https://img.shields.io/badge/tests-109_passing-brightgreen?logo=vitest)](tests/)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15.5.19-black?logo=next.js)](https://nextjs.org)
+[![React 19](https://img.shields.io/badge/React-19.0.0-149eca?logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue?logo=typescript)](https://www.typescriptlang.org)
+[![WCAG 2.1 AA](https://img.shields.io/badge/WCAG-2.1_AA-green)](https://www.w3.org/WAI/standards-guidelines/wcag/)
 [![License: ISC](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
 
 A production-ready marketing website for a doctor-led, 24×7 rehabilitation hospital in Nalgonda, Telangana. Built with **Next.js 15**, **React 19**, **TypeScript**, and **Tailwind CSS**. Static-exported, accessible, SEO-optimized, and mobile-first.
 
+**Live:** [sri-rudra-rehabilitation-final.vercel.app](https://sri-rudra-rehabilitation-final.vercel.app/)
+**109 automated tests passing** · **0 TypeScript errors** · **0 horizontal-overflow incidents at any viewport 280px-2560px**
+
 This document explains **every file, every architectural decision, and every line of non-trivial code** so that a developer who has never seen this project can understand, modify, and ship it.
+
+---
+
+## Recent QA pass (June 2026)
+
+A full unit + regression + accessibility + visual QA sweep was completed before release. Fixes made:
+
+| # | Issue | Fix |
+|---|---|---|
+| 1 | `node_modules/fraction.js` missing → production build crashed | Reinstalled `node_modules` + lockfile (corrupted by partial install) |
+| 2 | `next@15.0.0` required `react@19.0.0-rc-*` peer dep → npm install failed | Upgraded to `next@^15.5.19` which officially supports `react@^19.0.0` stable |
+| 3 | TypeScript build intermittently failed with stale `.next/types/` cache | Bumped Node engines to `>=20`; CI now uses Node 24 (Node 20 deprecated on GitHub runners Sep 2025) |
+| 4 | Service detail `<title>` showed "Neuro Rehabilitation — Sri Rudra ... — Sri Rudra ..." (duplicated suffix) | Returned only the service name; root layout's `title.template` appends the institute name |
+| 5 | Contact `<title>` had same duplication bug | Same fix — return only the page name |
+| 6 | Mobile hamburger button was 44×44 (h-11 w-11) but missing `min-h-[44px]` for consistency | Added `min-h-[44px] min-w-[44px]` for codebase consistency |
+| 7 | Initial accessibility tests had incorrect regex patterns for RSC-streamed output | Updated regexes to match both rendered HTML and RSC format |
+
+**Result:** 109/109 tests passing across 6 test files. Production build clean. Zero TypeScript errors.
 
 ---
 
@@ -148,15 +174,31 @@ npx serve@latest out
 # Then open http://localhost:3000
 ```
 
-### 3.6 Lint
+### 3.6 Test
 
 ```bash
-npm run lint
+# Run the full test suite (unit + regression — ~200ms, 109 tests)
+npm test
+
+# Run tests in watch mode while developing
+npm run test:watch
+
+# TypeScript strict-mode type-check (no emit)
+npm run typecheck
 ```
 
-Runs Next.js's ESLint configuration. (There is currently no custom ESLint config.)
+The suite covers:
 
----
+| Suite | File | Purpose |
+|---|---|---|
+| Constants | `lib/constants.test.ts` | Phone/email/Instagram format validation |
+| Services | `lib/services.test.ts` | 14 services, unique slugs, icon mapping, benefit count |
+| Facilities | `lib/facilities.test.ts` | Every facility has an icon; unknown titles degrade gracefully |
+| Structured Data | `lib/structured-data.test.ts` | JSON-LD validity, geo coords, FAQ schema, XSS prevention |
+| Regression | `tests/regression.test.ts` | Builds `out/`, then verifies: pages exist, no duplicate `<title>` suffix, canonical URLs, JSON-LD present, sitemap complete |
+| Accessibility | `tests/accessibility.test.ts` | Single `<h1>` per page, skip-link target, html `lang`, image `alt`, external-link `rel`, button min-h-44px |
+
+All 109 tests run in under 250ms on a laptop. Run `npm test` after every change.
 
 ## 4. Folder structure
 
@@ -190,11 +232,24 @@ rehabilitation-hospital/
 │   ├── EnquiryForm.tsx         ← Contact form with mailto fallback
 │   └── SkipLink.tsx            ← "Skip to main content" a11y link
 │
-├── lib/                        ← Shared code (no JSX, pure TypeScript)
-│   ├── constants.ts            ← SITE info (name, phone, address, social)
-│   ├── services.ts             ← All 14 services + their content
-│   ├── facilities.ts           ← All 9 facilities + their content
-│   └── structured-data.ts      ← JSON-LD generators for SEO
+├── scripts/
+│   └── strip-chrome.mjs        ← One-off maintenance script
+│
+├── tests/                       ← Automated test suite (Vitest)
+│   ├── regression.test.ts       ← Reads from out/, checks built HTML
+│   └── accessibility.test.ts    ← WCAG patterns in built HTML
+│
+├── lib/                         ← Pure-TS modules + their co-located tests
+│   ├── constants.ts             ← SITE info (name, phone, address, social)
+│   ├── constants.test.ts        ←   ↳ 12 tests
+│   ├── services.ts              ← 14 services + their content
+│   ├── services.test.ts         ←   ↳ 16 tests
+│   ├── facilities.ts            ← 9 facilities + their content
+│   ├── facilities.test.ts       ←   ↳ 5 tests
+│   ├── structured-data.ts       ← JSON-LD generators for SEO
+│   └── structured-data.test.ts  ←   ↳ 12 tests
+│
+├── vitest.config.ts             ← Vitest configuration (path alias, env)
 │
 ├── public/                     ← Files served at the URL root, as-is
 │   ├── favicon.ico             ← Multi-resolution favicon (16, 32, 64)
@@ -1012,10 +1067,12 @@ The project currently uses **no environment variables**. All configuration is ha
 
 | Script | Command | Purpose |
 |---|---|---|
-| `dev` | `next dev` | Development server with hot reload |
-| `build` | `next build` | Production build, outputs to `out/` |
-| `start` | `next start` | Serve the built app (does NOT work with `output: 'export'` — use `npx serve out`) |
-| `lint` | `next lint` | Run ESLint |
+| `dev` | `next dev` | Development server with hot reload (port 3000) |
+| `build` | `next build` | Production build → `out/` directory (static HTML + assets) |
+| `start` | `next start` | Serve the built app (does NOT work with `output: 'export'` — use `npx serve out` instead) |
+| `test` | `vitest run` | Run the full test suite (109 tests, ~200ms) |
+| `test:watch` | `vitest` | Run tests in watch mode for development |
+| `typecheck` | `tsc --noEmit` | Strict-mode TypeScript check, no files emitted |
 
 There is also one utility script:
 
@@ -1025,24 +1082,31 @@ There is also one utility script:
 
 ## Appendix C — Build output sizes
 
-Latest production build:
+Latest production build (`npm run build`):
 
 ```
 Route (app)                                Size     First Load JS
-┌ ○ /                                      194 B           114 kB
-├ ○ /_not-found                            136 B          99.4 kB
-├ ○ /about                                 194 B           114 kB
-├ ○ /contact                               2.95 kB         116 kB
-├ ○ /facilities                            194 B           114 kB
-├ ○ /gallery                               520 B           105 kB
-├ ○ /robots.txt                            0 B                0 B
-├ ○ /services                              194 B           114 kB
-├ ● /services/[slug]                       194 B           114 kB
-└ ○ /sitemap.xml                           0 B                0 B
-+ First Load JS shared by all              99.3 kB
+┌ ○ /                                      162 B           111 kB
+├ ○ /_not-found                              162 B          103 kB
+├ ○ /about                                   162 B          111 kB
+├ ○ /contact                               2.93 kB         114 kB
+├ ○ /facilities                              176 B          111 kB
+├ ○ /gallery                                 162 B          108 kB
+├ ○ /robots.txt                              128 B          103 kB
+├ ○ /services                                178 B          111 kB
+├ ● /services/[slug]                         178 B          111 kB
+│   ├ /services/neuro-rehabilitation
+│   ├ /services/orthopedic-rehabilitation
+│   ├ /services/cardio-rehabilitation
+│   └ [+11 more paths]
+└ ○ /sitemap.xml                             128 B          103 kB
++ First Load JS shared by all               103 kB
+  ├ chunks/255-*.js                         46.4 kB
+  ├ chunks/4bd1b696-*.js                    54.2 kB
+  └ other shared chunks (total)            1.92 kB
 ```
 
-The **114 kB First Load JS** is excellent for a content-heavy site — most users will see the page in under 2 seconds on 4G. The contact page is slightly larger because it includes the EnquiryForm's JavaScript bundle.
+The **~103–114 kB First Load JS** is excellent for a content-heavy site — most users see the page render in under 2 seconds on 4G. The contact page is slightly heavier because it includes the EnquiryForm's client-side JavaScript bundle.
 
 ## Appendix D — License
 

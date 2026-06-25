@@ -68,13 +68,29 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # 4. Run the production build.
+      # 4. Run unit + regression tests against source. Fast (~200ms);
+      #    catches schema/data regressions before we waste time building.
+      - name: Run unit and regression tests
+        run: npm test
+
+      # 5. TypeScript type-check. Strict mode is on; this fails the
+      #    build on any type error.
+      - name: TypeScript type-check
+        run: npm run typecheck
+
+      # 6. Run the production build.
       #    Runs TypeScript type-check + Next.js build.
       #    Output goes to the `out/` directory (because output: 'export').
       - name: Build site
         run: npm run build
 
-      # 5. Upload the built static site as a downloadable artifact.
+      # 7. Re-run regression tests against the freshly-built output.
+      #    tests/regression.test.ts reads from out/, so it must run
+      #    after build, not before.
+      - name: Run regression tests against build output
+        run: npm test
+
+      # 8. Upload the built static site as a downloadable artifact.
       #    After the workflow runs, you can download this from the
       #    Actions tab and upload it to any static host.
       - name: Upload build artifact

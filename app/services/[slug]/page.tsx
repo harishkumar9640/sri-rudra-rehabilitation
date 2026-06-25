@@ -21,11 +21,17 @@ export function generateStaticParams(): { slug: string }[] {
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
+  // Resolve the dynamic route param and look up the service by slug.
+  // If the slug doesn't match any service, return a 404-style title.
   const { slug } = await params;
   const service = getServiceBySlug(slug);
   if (!service) return { title: 'Service not found' };
+  // Return only the service name as the title — the root layout's
+  // `title.template` ('%s — Sri Rudra ...') wraps it with the institute
+  // name automatically. Returning the full title here would cause the
+  // institute name to appear twice in the rendered <title>.
   return {
-    title: `${service.name} — Sri Rudra Rehabilitation & Healing Institute`,
+    title: service.name,
     description: service.description,
   };
 }

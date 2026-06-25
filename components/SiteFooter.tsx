@@ -62,6 +62,21 @@ const linkCls =
   'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ' +
   'focus-visible:outline-teal-500';
 
+/**
+ * Site footer — 4-column on desktop, stacked on mobile.
+ *
+ * Columns:
+ *   1. Brand block  (logo + name + tagline + 4 social icons, 44x44 each)
+ *   2. Quick Links  (in-app navigation)
+ *   3. Contact Info (address, phone, email)
+ *   4. Resources   (brochure PDF download)
+ *
+ * The bottom strip carries copyright + a Sitemap link so crawlers
+ * (and humans) can discover every URL on the site in one click.
+ *
+ * Social icons open external links in a new tab with rel="noopener
+ * noreferrer" — required for security when linking to third-party sites.
+ */
 export default function SiteFooter() {
   return (
     <footer className="bg-brand-900 text-brand-100">

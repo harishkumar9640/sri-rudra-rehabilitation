@@ -27,6 +27,33 @@ import { SITE } from '@/lib/constants';
  *  - Submission state is announced via aria-live so screen-readers catch it.
  *  - 44px tap targets everywhere.
  */
+/**
+ * Client-side enquiry form for the Contact page.
+ *
+ * Form fields: name, phone, email, relation-to-patient, condition,
+ * free-text description, preferred contact method (radio).
+ *
+ * Submission: because the site is statically exported (no backend),
+ * the form builds a `mailto:` URL with all fields encoded into the
+ * subject line and body, then opens the user's default mail client.
+ * The form is then replaced by a "Thank you" panel with Email / Call /
+ * WhatsApp fallback CTAs. If the mail client does not open within 2.5s,
+ * a "no mail client detected" panel is shown instead.
+ *
+ * State machine:
+ *   idle -> submitting -> sent (success panel with mailto fallback)
+ *                     \-> no-mail-client (fallback panel only)
+ *
+ * Accessibility:
+ *   - Every field has a `<label htmlFor>`
+ *   - Required fields use both `required` and `aria-required="true"`
+ *   - Submit state announced via `role="status" aria-live="polite"`
+ *   - 44px tap targets throughout
+ *
+ * When a backend is added: replace the `handleSubmit` mailto logic with
+ * a `fetch()` POST to the new endpoint. The component contract stays
+ * the same.
+ */
 export default function EnquiryForm() {
   const formId = useId();
   const [state, setState] = useState<
